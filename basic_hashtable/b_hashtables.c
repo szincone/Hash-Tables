@@ -104,6 +104,14 @@ void hash_table_insert(BasicHashTable *ht, char *key, char *value)
  ****/
 void hash_table_remove(BasicHashTable *ht, char *key)
 {
+  int hash_id = hash(key, ht->capacity);
+  if (ht->storage[hash_id])
+  {
+    // free(ht->storage[hash_id]->value);
+    ht->storage[hash_id]->value = NULL;
+    // return ht->storage[hash_id]->value;
+  }
+  return NULL;
 }
 
 /****
@@ -128,6 +136,8 @@ char *hash_table_retrieve(BasicHashTable *ht, char *key)
  ****/
 void destroy_hash_table(BasicHashTable *ht)
 {
+  free(ht->storage);
+  free(ht);
 }
 
 #ifndef TESTING
