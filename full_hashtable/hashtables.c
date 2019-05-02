@@ -94,14 +94,31 @@ HashTable *create_hash_table(int capacity)
  */
 void hash_table_insert(HashTable *ht, char *key, char *value)
 {
-  // LinkedPair *pair;
-  // pair = create_pair(key, value);
-  // int hash_id = hash(key, ht->capacity);
-  // if (ht->storage[hash_id])
-  // {
-  //   printf("Collision!!!\n");
-  // }
-  // ht->storage[hash_id] = pair;
+  LinkedPair *new_pair;
+  new_pair = create_pair(key, value);
+  int hash_id = hash(key, ht->capacity);
+  if (ht->storage[hash_id])
+  {
+    LinkedPair *current_pair = ht->storage[hash_id];
+    while (current_pair)
+    {
+      if (strcmp(current_pair->key, key) == 0)
+      {
+        current_pair->value = value;
+        return current_pair->value;
+      }
+      if (!current_pair->next)
+      {
+        current_pair->next = create_pair(key, value);
+        return current_pair->next;
+      }
+      current_pair = current_pair->next;
+    }
+  }
+  else
+  {
+    ht->storage[hash_id] = new_pair;
+  }
 }
 
 /*
@@ -126,9 +143,28 @@ void hash_table_remove(HashTable *ht, char *key)
  */
 char *hash_table_retrieve(HashTable *ht, char *key)
 {
+  int hash_id = hash(key, ht->capacity);
+  if (ht->storage[hash_id])
+  {
+    LinkedPair *current_pair = ht->storage[hash_id];
+    while (current_pair)
+    {
+      if (strcmp(current_pair->key, key) == 0)
+      {
+        return current_pair->value;
+      }
+      if (current_pair->next == NULL)
+      {
+        return NULL;
+      }
+      current_pair = current_pair->next;
+    }
+  }
   return NULL;
 }
-
+// What is a computer and how does it work?
+// What is an array and how does it work?
+// What is a hash table and how does it work?
 /*
   Fill this in.
 
