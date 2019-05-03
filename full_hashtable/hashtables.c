@@ -131,6 +131,33 @@ void hash_table_insert(HashTable *ht, char *key, char *value)
  */
 void hash_table_remove(HashTable *ht, char *key)
 {
+  int hash_id = hash(key, ht->capacity);
+  if (ht->storage[hash_id])
+  {
+    LinkedPair *current_pair = ht->storage[hash_id];
+    if (strcmp(current_pair->key, key) == 0)
+    {
+      destroy_pair(current_pair);
+      ht->storage[hash_id] = NULL;
+    }
+    else
+    {
+      while (current_pair->next)
+      {
+        if (!current_pair->next)
+        {
+          destroy_pair(current_pair->next);
+          current_pair->value = NULL;
+        }
+        current_pair = current_pair->next;
+      }
+    }
+  }
+  else
+  {
+    printf("Index out of range");
+  }
+  return NULL;
 }
 
 /*
