@@ -9,7 +9,8 @@
   More specifically, the `next` field is a pointer pointing to the the 
   next `LinkedPair` in the list of `LinkedPair` nodes. 
  */
-typedef struct LinkedPair {
+typedef struct LinkedPair
+{
   char *key;
   char *value;
   struct LinkedPair *next;
@@ -18,7 +19,8 @@ typedef struct LinkedPair {
 /*
   Hash table with linked pairs.
  */
-typedef struct HashTable {
+typedef struct HashTable
+{
   int capacity;
   LinkedPair **storage;
 } HashTable;
@@ -41,7 +43,8 @@ LinkedPair *create_pair(char *key, char *value)
  */
 void destroy_pair(LinkedPair *pair)
 {
-  if (pair != NULL) {
+  if (pair != NULL)
+  {
     free(pair->key);
     free(pair->value);
     free(pair);
@@ -57,9 +60,10 @@ unsigned int hash(char *str, int max)
 {
   unsigned long hash = 5381;
   int c;
-  unsigned char * u_str = (unsigned char *)str;
+  unsigned char *u_str = (unsigned char *)str;
 
-  while ((c = *u_str++)) {
+  while ((c = *u_str++))
+  {
     hash = ((hash << 5) + hash) + c;
   }
 
@@ -73,8 +77,9 @@ unsigned int hash(char *str, int max)
  */
 HashTable *create_hash_table(int capacity)
 {
-  HashTable *ht;
-
+  HashTable *ht = malloc(sizeof(HashTable));
+  ht->capacity = capacity;
+  ht->storage = malloc(capacity * sizeof(LinkedPair *));
   return ht;
 }
 
@@ -89,7 +94,31 @@ HashTable *create_hash_table(int capacity)
  */
 void hash_table_insert(HashTable *ht, char *key, char *value)
 {
-
+  LinkedPair *new_pair;
+  new_pair = create_pair(key, value);
+  int hash_id = hash(key, ht->capacity);
+  if (ht->storage[hash_id])
+  {
+    LinkedPair *current_pair = ht->storage[hash_id];
+    while (current_pair)
+    {
+      if (strcmp(current_pair->key, key) == 0)
+      {
+        current_pair->value = value;
+        return current_pair->value;
+      }
+      if (!current_pair->next)
+      {
+        current_pair->next = create_pair(key, value);
+        return current_pair->next;
+      }
+      current_pair = current_pair->next;
+    }
+  }
+  else
+  {
+    ht->storage[hash_id] = new_pair;
+  }
 }
 
 /*
@@ -102,7 +131,33 @@ void hash_table_insert(HashTable *ht, char *key, char *value)
  */
 void hash_table_remove(HashTable *ht, char *key)
 {
-
+  int hash_id = hash(key, ht->capacity);
+  if (ht->storage[hash_id])
+  {
+    LinkedPair *current_pair = ht->storage[hash_id];
+    if (strcmp(current_pair->key, key) == 0)
+    {
+      destroy_pair(current_pair);
+      ht->storage[hash_id] = NULL;
+    }
+    else
+    {
+      while (current_pair->next)
+      {
+        if (!current_pair->next)
+        {
+          destroy_pair(current_pair->next);
+          current_pair->value = NULL;
+        }
+        current_pair = current_pair->next;
+      }
+    }
+  }
+  else
+  {
+    printf("Index out of range");
+  }
+  return NULL;
 }
 
 /*
@@ -115,9 +170,28 @@ void hash_table_remove(HashTable *ht, char *key)
  */
 char *hash_table_retrieve(HashTable *ht, char *key)
 {
+  int hash_id = hash(key, ht->capacity);
+  if (ht->storage[hash_id])
+  {
+    LinkedPair *current_pair = ht->storage[hash_id];
+    while (current_pair)
+    {
+      if (strcmp(current_pair->key, key) == 0)
+      {
+        return current_pair->value;
+      }
+      if (current_pair->next == NULL)
+      {
+        return NULL;
+      }
+      current_pair = current_pair->next;
+    }
+  }
   return NULL;
 }
-
+// What is a computer and how does it work?
+// What is an array and how does it work?
+// What is a hash table and how does it work?
 /*
   Fill this in.
 
@@ -125,7 +199,6 @@ char *hash_table_retrieve(HashTable *ht, char *key)
  */
 void destroy_hash_table(HashTable *ht)
 {
-
 }
 
 /*
@@ -138,11 +211,22 @@ void destroy_hash_table(HashTable *ht)
  */
 HashTable *hash_table_resize(HashTable *ht)
 {
-  HashTable *new_ht;
-
+  HashTable *new_ht = create_hash_table(ht->capacity * 2);
+  for (int i = 0; i < ht->capacity; i++)
+  {
+    LinkedPair *current_pair = ht->storage[i];
+    if (current_pair)
+    {
+      while (current_pair)
+      {
+        hash_table_insert(new_ht, current_pair->key, current_pair->value);
+        current_pair = current_pair->next;
+      }
+    }
+  }
+  free(ht);
   return new_ht;
 }
-
 
 #ifndef TESTING
 int main(void)
